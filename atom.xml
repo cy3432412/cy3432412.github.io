@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-10-31T03:02:59.257Z</updated>
+  <updated>2019-10-31T03:24:50.526Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>最大子序列和</title>
+    <link href="http://yoursite.com/2019/10/31/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%88%97%E5%92%8C/"/>
+    <id>http://yoursite.com/2019/10/31/最大子序列和/</id>
+    <published>2019-10-31T03:19:56.000Z</published>
+    <updated>2019-10-31T03:24:50.526Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="最大子序列和"><a href="#最大子序列和" class="headerlink" title="最大子序列和"></a>最大子序列和</h1><h2 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h2><blockquote><p>给出一段序列，选出其中连续且非空的一段使得这段和最大。</p></blockquote><h2 id="方法一-分治法"><a href="#方法一-分治法" class="headerlink" title="方法一 分治法"></a>方法一 分治法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">int divide(int a[],int left,int right)</span><br><span class="line">&#123;</span><br><span class="line">    int mid =(left+right)/2;</span><br><span class="line">    if(right==left)</span><br><span class="line">      return a[left];</span><br><span class="line">    int max_left_sum=divide(a,left,mid);//左字段最大和</span><br><span class="line">    int max_right_sum=divide(a,mid+1,right);//右字段最大和</span><br><span class="line">    //处理端点分别在左半段和右半段的情况</span><br><span class="line">    int sum=0;</span><br><span class="line">    int left_sum=-10001;</span><br><span class="line">    for(int i=mid;i&gt;=left;--i)</span><br><span class="line">    &#123;</span><br><span class="line">        sum+=a[i];</span><br><span class="line">        if(sum&gt;left_sum)</span><br><span class="line">            left_sum=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    sum=0;</span><br><span class="line">    int right_sum=-10001;</span><br><span class="line">    for(int i=mid+1;i&lt;=right;++i)</span><br><span class="line">    &#123;</span><br><span class="line">        sum+=a[i];</span><br><span class="line">        if(sum&gt;right_sum)</span><br><span class="line">           right_sum=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    int max_mid_sum=left_sum+right_sum;</span><br><span class="line">    int max=max_mid_sum;</span><br><span class="line">    if(max&lt;max_left_sum)//求三者最大值</span><br><span class="line">        max=max_left_sum;</span><br><span class="line">    if(max&lt;max_right_sum)</span><br><span class="line">        max=max_right_sum;</span><br><span class="line"></span><br><span class="line">    return max;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h2 id="方法二-动态规划"><a href="#方法二-动态规划" class="headerlink" title="方法二 动态规划"></a>方法二 动态规划</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">int dp(int a[],int n)//状态转移方程 f[i]=max(f[i-1]+a[i],a[i])</span><br><span class="line">/*</span><br><span class="line">**因为若f[i]的值为负数，则f[i+1]的值就是n[i],而n[i]的值不一定比前面的最大字段和数大！</span><br><span class="line">**或者n[i]为负数，则f[i]小于f[i-1]!</span><br><span class="line">**所以，我们还要再用一个数从1到n再查找一次，才能找出最大数.</span><br><span class="line">*/</span><br><span class="line">&#123;</span><br><span class="line">    int ans[200005]=&#123;0&#125;;</span><br><span class="line">    int sum=-10001;</span><br><span class="line">    for(int i=0;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ans[i]=max(ans[i-1]+a[i],a[i]);</span><br><span class="line">        sum=max(sum,ans[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    return sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;最大子序列和&quot;&gt;&lt;a href=&quot;#最大子序列和&quot; class=&quot;headerlink&quot; title=&quot;最大子序列和&quot;&gt;&lt;/a&gt;最大子序列和&lt;/h1&gt;&lt;h2 id=&quot;题目描述&quot;&gt;&lt;a href=&quot;#题目描述&quot; class=&quot;headerlink&quot; title=&quot;题
+      
+    
+    </summary>
+    
+    
+    
+      <category term="算法" scheme="http://yoursite.com/tags/%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
   
   <entry>
     <title>test</title>
