@@ -180,54 +180,11 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        <h1 id="ArrayList源码分析"><a href="#ArrayList源码分析" class="headerlink" title="ArrayList源码分析"></a><code>ArrayList</code>源码分析</h1><h2 id="几个属性"><a href="#几个属性" class="headerlink" title="几个属性"></a>几个属性</h2><ul>
-<li><code>elementData</code>：存放数组  默认为空</li>
-<li><code>minCapacity</code>：最小存放容量，默认 <code>DEFAULT_CAPACITY</code> = 10</li>
-<li><code>size</code>：数组容量</li>
-<li><code>MAX_ARRAY_SIZE</code>：最大数组容量等于 <code>Integer.MAX_VALUE - 8</code></li>
-</ul>
-<h2 id="几个函数"><a href="#几个函数" class="headerlink" title="几个函数"></a>几个函数</h2><ul>
-<li><code>grow()</code>：扩容函数 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">grow</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// overflow-conscious code</span></span><br><span class="line">    <span class="keyword">int</span> oldCapacity = elementData.length;</span><br><span class="line">    <span class="comment">//所扩容容量为原容量的1.5倍</span></span><br><span class="line">    <span class="keyword">int</span> newCapacity = oldCapacity + (oldCapacity &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>)</span><br><span class="line">        newCapacity = minCapacity;</span><br><span class="line">    <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>)</span><br><span class="line">        newCapacity = hugeCapacity(minCapacity);</span><br><span class="line">    <span class="comment">// minCapacity is usually close to size, so this is a win:</span></span><br><span class="line">    elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">    <span class="comment">//分配数组空间</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>hugeCapacity()</code>：大容量处理<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">hugeCapacity</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (minCapacity &lt; <span class="number">0</span>) <span class="comment">// overflow</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> OutOfMemoryError();</span><br><span class="line">    <span class="keyword">return</span> (minCapacity &gt; MAX_ARRAY_SIZE) ?</span><br><span class="line">        Integer.MAX_VALUE :</span><br><span class="line">        MAX_ARRAY_SIZE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>当<code>newCapacity</code> 大于 <code>MAX_ARRAY_SIZE</code> 时进入该函数，判断应该返回什么新容量，通过 <code>minCapacity</code> 与 <code>MAX_ARRAY_SIZE</code> 的比值进行判断:如果大于则为 <code>Integer.MAX_VALUE</code>，否则为 <code>MAX_ARRAY_SIZE</code>。</p>
-</blockquote>
-</li>
-</ul>
-<h2 id="ArrayList-扩容机制"><a href="#ArrayList-扩容机制" class="headerlink" title="ArrayList 扩容机制"></a><code>ArrayList</code> 扩容机制</h2><blockquote>
-<p>ArrayList 的扩容主要发生在<code>add()</code>函数中</p>
-</blockquote>
-<ul>
-<li><p><code>add()</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    ensureCapacityInternal(size + <span class="number">1</span>);  <span class="comment">// Increments modCount!!</span></span><br><span class="line">    elementData[size++] = e;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第一步，先执行 <code>ensureCapacityInternal(size + 1)</code> 确保集合添加容量大于等于 <code>size + 1</code>,然后在数组<code>elementData</code>中添加元素。</p>
-</li>
-<li><p><code>ensureCapacityInternal()</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ensureCapacityInternal</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) &#123;</span><br><span class="line">        minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ensureExplicitCapacity(minCapacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第二步，在函数 <code>ensureCapacityInternal()</code> 中，如果数组<code>elementData</code>为空，则扩容容量为<code>DEFAULT_CAPACITY</code> = 10，然后执行<code>ensureExplicitCapacity(minCapacity)</code> 函数</p>
-</li>
-<li><p><code>ensureExplicitCapacity()</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ensureExplicitCapacity</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    modCount++;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// overflow-conscious code</span></span><br><span class="line">    <span class="keyword">if</span> (minCapacity - elementData.length &gt; <span class="number">0</span>)</span><br><span class="line">        grow(minCapacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第三步，在函数 <code>ensureExplicitCapacity()</code> 中，先将修改计数器加一<code>modCount++</code>，在判断是否需要扩容，如果需要执行<a href="##几个函数"><code>grow()</code></a></p>
-</li>
-</ul>
-<h2 id="ArrayList与LinkedList的区别"><a href="#ArrayList与LinkedList的区别" class="headerlink" title="ArrayList与LinkedList的区别"></a><code>ArrayList</code>与<code>LinkedList</code>的区别</h2><ul>
-<li><p>数据结构：<code>ArrayList</code> 底层使用的是<code>Object</code>数组；<code>LinkedList</code> 底层使用的是双向链表数据结构（JDK1.6之前为循环链表，JDK1.7取消了循环。注意双向链表和双向循环链表的区别，下面有介绍到！）</p>
-</li>
-<li><p>线程安全：<code>ArrayList</code> 和 <code>LinkedList</code> 都是不同步的，也就是不保证线程安全。</p>
-</li>
-<li><p>插入和删除是否受元素位置的影响：</p>
-<ul>
-<li><code>ArrayList</code> 采用数组存储，所以插入和删除元素的时间复杂度受元素位置的影响。 比如：执行<code>add(E e)</code>方法的时候， <code>ArrayList</code> 会默认在将指定的元素追加到此列表的末尾，这种情况时间复杂度就是<code>O(1)</code>。但是如果要在指定位置 i 插入和删除元素的话<code>add(int index, E element)</code>时间复杂度就为 <code>O(n-i)</code>。因为在进行上述操作的时候集合中第 i 和第 i 个元素之后(n-i)个元素都要执行向后位/向前移一位的操作。</li>
-<li><code>LinkedList</code> 采用链表存储，所以插入，删除元素时间复杂度不受元素位置的影响，都是近似 <code>O(1)</code> 而数组为近似 <code>O(n)</code>。</li>
-</ul>
-</li>
-<li><p>是否支持快速随机访问：<code>LinkedList</code> 不支持高效的随机元素访问，而 <code>ArrayList</code> 支持。快速随机访问就是通过元素的序号快速获取元素对象(对应于<code>get(int index)</code>方法)。</p>
-</li>
-<li><p>内存空间占用：<code>ArrayList</code>的空间浪费主要体现在在list列表的结尾会预留一定的容量空间，而<code>LinkedList</code>的空间花费则体现在它的每一个元素都需要消耗比<code>ArrayList</code>更多的空间（因为要存放直接后继和直接前驱以及数据）</p>
-</li>
-</ul>
-
+        ArrayList源码分析几个属性
+elementData：存放数组  默认为空
+minCapacity：最小存放容量，默认 DEFAULT_CAPACITY = 10
+size：数组容量
+MA...
     
 
         <a href="/2019/12/07/ArrayList%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" class="post-more waves-effect waves-button">
@@ -272,11 +229,10 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        <h1 id="最大子序列和"><a href="#最大子序列和" class="headerlink" title="最大子序列和"></a>最大子序列和</h1><h2 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h2><blockquote>
-<p>给出一段序列，选出其中连续且非空的一段使得这段和最大。</p>
-</blockquote>
-<h2 id="方法一-分治法"><a href="#方法一-分治法" class="headerlink" title="方法一 分治法"></a>方法一 分治法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">int divide(int a[],int left,int right)</span><br><span class="line">&#123;</span><br><span class="line">    int mid =(left+right)/2;</span><br><span class="line">    if(right==left)</span><br><span class="line">      return a[left];</span><br><span class="line">    int max_left_sum=divide(a,left,mid);//左字段最大和</span><br><span class="line">    int max_right_sum=divide(a,mid+1,right);//右字段最大和</span><br><span class="line">    //处理端点分别在左半段和右半段的情况</span><br><span class="line">    int sum=0;</span><br><span class="line">    int left_sum=-10001;</span><br><span class="line">    for(int i=mid;i&gt;=left;--i)</span><br><span class="line">    &#123;</span><br><span class="line">        sum+=a[i];</span><br><span class="line">        if(sum&gt;left_sum)</span><br><span class="line">            left_sum=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    sum=0;</span><br><span class="line">    int right_sum=-10001;</span><br><span class="line">    for(int i=mid+1;i&lt;=right;++i)</span><br><span class="line">    &#123;</span><br><span class="line">        sum+=a[i];</span><br><span class="line">        if(sum&gt;right_sum)</span><br><span class="line">           right_sum=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    int max_mid_sum=left_sum+right_sum;</span><br><span class="line">    int max=max_mid_sum;</span><br><span class="line">    if(max&lt;max_left_sum)//求三者最大值</span><br><span class="line">        max=max_left_sum;</span><br><span class="line">    if(max&lt;max_right_sum)</span><br><span class="line">        max=max_right_sum;</span><br><span class="line"></span><br><span class="line">    return max;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="方法二-动态规划"><a href="#方法二-动态规划" class="headerlink" title="方法二 动态规划"></a>方法二 动态规划</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">int dp(int a[],int n)//状态转移方程 f[i]=max(f[i-1]+a[i],a[i])</span><br><span class="line">/*</span><br><span class="line">**因为若f[i]的值为负数，则f[i+1]的值就是n[i],而n[i]的值不一定比前面的最大字段和数大！</span><br><span class="line">**或者n[i]为负数，则f[i]小于f[i-1]!</span><br><span class="line">**所以，我们还要再用一个数从1到n再查找一次，才能找出最大数.</span><br><span class="line">*/</span><br><span class="line">&#123;</span><br><span class="line">    int ans[200005]=&#123;0&#125;;</span><br><span class="line">    int sum=-10001;</span><br><span class="line">    for(int i=0;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ans[i]=max(ans[i-1]+a[i],a[i]);</span><br><span class="line">        sum=max(sum,ans[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    return sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        最大子序列和题目描述
+给出一段序列，选出其中连续且非空的一段使得这段和最大。
+
+方法一 分治法12345678910111213141516171819202122232425262728293...
     
 
         <a href="/2019/10/31/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%88%97%E5%92%8C/" class="post-more waves-effect waves-button">
@@ -323,11 +279,9 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        <h1 id="First-title"><a href="#First-title" class="headerlink" title="First title"></a>First title</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">function fun()&#123;</span><br><span class="line">     echo &quot;这是一句非常牛逼的代码&quot;;</span><br><span class="line">&#125;</span><br><span class="line">fun();</span><br></pre></td></tr></table></figure>
-<h2 id="Second-title"><a href="#Second-title" class="headerlink" title="Second title"></a>Second title</h2><blockquote>
-<p>这是引用</p>
-</blockquote>
-
+        First title1234function fun()&#123;     echo &quot;这是一句非常牛逼的代码&quot;;&#125;fun();
+Second title
+这是...
     
 
         <a href="/2019/10/31/test/" class="post-more waves-effect waves-button">
@@ -372,20 +326,7 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
+        Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any ...
     
 
         <a href="/2019/10/30/hello-world/" class="post-more waves-effect waves-button">
